@@ -4,7 +4,7 @@ import funkin.graphics.FlxFilteredSprite;
 
 /**
  * The icon that gets used for Freeplay capsules and char select
- * NOT to be confused with the HealthIcon class, which is for the in-game icons
+ * NOT to be confused with the CharIcon class, which is for the in-game icons
  */
 class PixelatedIcon extends FlxFilteredSprite
 {
@@ -22,30 +22,25 @@ class PixelatedIcon extends FlxFilteredSprite
 
     switch (char)
     {
-      // MAT MIXES CASES
-      case "mat" | "mat-playable" | "mat-christmas" | "mat-car" | "mat-dark" | "mat-playable-dark":
-        charPath += "matpixel";
-      case "prism" | "prism-christmas" | "prism-car" | "prism-dark":
-        charPath += "facepixel";
-
-      // BASE GAME CASES
-      case "bf-christmas" | "bf-car" | "bf-pixel" | "bf-holding-gf" | "bf-dark" | "bf-opponent" | "bf-opponent-dark":
+      case "bf-christmas" | "bf-car" | "bf-pixel" | "bf-holding-gf":
         charPath += "bfpixel";
       case "monster-christmas":
         charPath += "monsterpixel";
       case "mom" | "mom-car":
         charPath += "mommypixel";
-      case "pico-blazin" | "pico-playable" | "pico-speaker" | "pico-christmas" | "pico-dark":
+      case "pico-blazin" | "pico-playable" | "pico-speaker":
         charPath += "picopixel";
-      case "gf-christmas" | "gf-car" | "gf-pixel" | "gf-tankmen" | "gf-dark":
+      case "gf-christmas" | "gf-car" | "gf-pixel" | "gf-tankmen":
         charPath += "gfpixel";
+      case "dad":
+        charPath += "dadpixel";
       case "darnell-blazin":
         charPath += "darnellpixel";
       case "senpai-angry":
         charPath += "senpaipixel";
       case "spooky-dark":
         charPath += "spookypixel";
-      case "tankman-atlas":
+      case "tankman-atlas" | "tankman-bloody":
         charPath += "tankmanpixel";
       default:
         charPath += '${char}pixel';
@@ -53,8 +48,8 @@ class PixelatedIcon extends FlxFilteredSprite
 
     if (!openfl.utils.Assets.exists(Paths.image(charPath)))
     {
-      trace('[WARN] Character ${char} has no freeplay icon.\nLoading placeholder instead.');
-      charPath = "freeplay/icons/facepixel";
+      trace('[WARN] Character ${char} has no freeplay icon.');
+      this.visible = false;
       return;
     }
     else

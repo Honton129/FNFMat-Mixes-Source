@@ -1,10 +1,10 @@
 package funkin.ui.freeplay;
 
 import flixel.util.FlxSignal;
-import funkin.audio.FunkinSound;
-import funkin.data.freeplay.player.PlayerData.PlayerFreeplayDJData;
-import funkin.data.freeplay.player.PlayerRegistry;
 import funkin.graphics.adobeanimate.FlxAtlasSprite;
+import funkin.audio.FunkinSound;
+import funkin.data.freeplay.player.PlayerRegistry;
+import funkin.data.freeplay.player.PlayerData.PlayerFreeplayDJData;
 
 class FreeplayDJ extends FlxAtlasSprite
 {
@@ -96,18 +96,6 @@ class FreeplayDJ extends FlxAtlasSprite
           playFlashAnimation(animPrefix, true, false, true);
         }
         timeIdling += elapsed;
-
-        // this.isLoopComplete() caused the issue :/
-        if (timeIdling > IDLE_EGG_PERIOD && !seenIdleEasterEgg)
-        {
-          // Afk Easter egg should play now
-          currentState = AfkIdle;
-        }
-        else if (timeIdling > IDLE_CARTOON_PERIOD && characterId == 'bf')
-        {
-          // Exclusive Anim to BF
-          currentState = Cartoon;
-        }
       case NewUnlock:
         var animPrefix = playableCharData.getAnimationPrefix('newUnlock');
         if (!hasAnimation(animPrefix))
@@ -118,7 +106,6 @@ class FreeplayDJ extends FlxAtlasSprite
         {
           playFlashAnimation(animPrefix, true, false, true);
         }
-        timeIdling = 0;
       case Confirm:
         var animPrefix = playableCharData.getAnimationPrefix('confirm');
         if (getCurrentAnimation() != animPrefix) playFlashAnimation(animPrefix, false);
@@ -127,7 +114,6 @@ class FreeplayDJ extends FlxAtlasSprite
         var animPrefixA = playableCharData.getAnimationPrefix('fistPump');
         var animPrefixB = playableCharData.getAnimationPrefix('loss');
 
-        timeIdling = 0;
         if (getCurrentAnimation() == animPrefixA)
         {
           var endFrame = playableCharData.getFistPumpIntroEndFrame();
@@ -138,7 +124,6 @@ class FreeplayDJ extends FlxAtlasSprite
         }
         else if (getCurrentAnimation() == animPrefixB)
         {
-          trace("Loss Intro");
           var endFrame = playableCharData.getFistPumpIntroBadEndFrame();
           if (endFrame > -1 && anim.curFrame >= endFrame)
           {
@@ -154,7 +139,6 @@ class FreeplayDJ extends FlxAtlasSprite
         var animPrefixA = playableCharData.getAnimationPrefix('fistPump');
         var animPrefixB = playableCharData.getAnimationPrefix('loss');
 
-        timeIdling = 0;
         if (getCurrentAnimation() == animPrefixA)
         {
           var endFrame = playableCharData.getFistPumpLoopEndFrame();
@@ -165,7 +149,6 @@ class FreeplayDJ extends FlxAtlasSprite
         }
         else if (getCurrentAnimation() == animPrefixB)
         {
-          trace("Loss GYATT");
           var endFrame = playableCharData.getFistPumpLoopBadEndFrame();
           if (endFrame > -1 && anim.curFrame >= endFrame)
           {
@@ -177,15 +160,21 @@ class FreeplayDJ extends FlxAtlasSprite
           FlxG.log.warn("Unrecognized animation in FistPump: " + getCurrentAnimation());
         }
 
-      case AfkIdle:
+      case IdleEasterEgg:
         var animPrefix = playableCharData.getAnimationPrefix('idleEasterEgg');
-        if (getCurrentAnimation() != animPrefix) playFlashAnimation(animPrefix, false);
-        seenIdleEasterEgg = true;
-        onIdleEasterEgg.dispatch();
+        if (getCurrentAnimation() != animPrefix)
+        {
+          onIdleEasterEgg.dispatch();
+          playFlashAnimation(animPrefix, false);
+          seenIdleEasterEgg = true;
+        }
         timeIdling = 0;
       case Cartoon:
         var animPrefix = playableCharData.getAnimationPrefix('cartoon');
-        if (animPrefix == null) currentState = AfkIdle;
+        if (animPrefix == null)
+        {
+          currentState = IdleEasterEgg;
+        }
         else
         {
           if (getCurrentAnimation() != animPrefix) playFlashAnimation(animPrefix, true);
@@ -194,6 +183,36 @@ class FreeplayDJ extends FlxAtlasSprite
       default:
         // I shit myself.
     }
+
+    #if FEATURE_DEBUG_FUNCTIONS
+    if (FlxG.keys.pressed.CONTROL)
+    {
+      if (FlxG.keys.justPressed.LEFT)
+      {
+        this.offsetX -= FlxG.keys.pressed.ALT ? 0.1 : (FlxG.keys.pressed.SHIFT ? 10.0 : 1.0);
+      }
+
+      if (FlxG.keys.justPressed.RIGHT)
+      {
+        this.offsetX += FlxG.keys.pressed.ALT ? 0.1 : (FlxG.keys.pressed.SHIFT ? 10.0 : 1.0);
+      }
+
+      if (FlxG.keys.justPressed.UP)
+      {
+        this.offsetY -= FlxG.keys.pressed.ALT ? 0.1 : (FlxG.keys.pressed.SHIFT ? 10.0 : 1.0);
+      }
+
+      if (FlxG.keys.justPressed.DOWN)
+      {
+        this.offsetY += FlxG.keys.pressed.ALT ? 0.1 : (FlxG.keys.pressed.SHIFT ? 10.0 : 1.0);
+      }
+
+      if (FlxG.keys.justPressed.C)
+      {
+        currentState = (currentState == Idle ? Cartoon : Idle);
+      }
+    }
+    #end
   }
 
   function onFinishAnim(name:String):Void
@@ -215,6 +234,15 @@ class FreeplayDJ extends FlxAtlasSprite
     else if (name == playableCharData.getAnimationPrefix('idle'))
     {
       // trace('Finished idle');
+
+      if (timeIdling >= IDLE_EGG_PERIOD && !seenIdleEasterEgg)
+      {
+        currentState = IdleEasterEgg;
+      }
+      else if (timeIdling >= IDLE_CARTOON_PERIOD)
+      {
+        currentState = Cartoon;
+      }
     }
     else if (name == playableCharData.getAnimationPrefix('confirm'))
     {
@@ -485,7 +513,7 @@ enum FreeplayDJState
   /**
    * Plays an easter egg animation after a period in Idle, then reverts to Idle.
    */
-  AfkIdle;
+  IdleEasterEgg;
 
   /**
    * Plays an elaborate easter egg animation. Does not revert until another animation is triggered.

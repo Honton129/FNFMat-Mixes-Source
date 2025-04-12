@@ -113,9 +113,14 @@ class ScoreNum extends FlxSprite
     baseY = y;
     baseX = x;
 
-    if (styleData == null) frames = Paths.getSparrowAtlas('digital_numbers');
+    if (styleData == null)
+    {
+      frames = Paths.getSparrowAtlas('digital_numbers');
+    }
     else
+    {
       frames = Paths.getSparrowAtlas(styleData.getNumbersAssetKey());
+    }
 
     for (i in 0...10)
     {

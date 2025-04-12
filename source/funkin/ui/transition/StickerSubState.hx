@@ -1,29 +1,39 @@
 package funkin.ui.transition;
 
-import flixel.FlxG;
-import flixel.FlxState;
-import flixel.addons.transition.FlxTransitionableState;
+import haxe.Json;
+import funkin.graphics.FunkinSprite;
+// import flxtyped group
+import funkin.ui.MusicBeatSubState;
 import flixel.group.FlxGroup.FlxTypedGroup;
+import flixel.util.FlxTimer;
+import flixel.FlxG;
 import flixel.math.FlxMath;
 import flixel.util.FlxSort;
-import flixel.util.FlxTimer;
-// import flxtyped group
-import funkin.audio.FunkinSound;
-import funkin.graphics.FunkinSprite;
-import funkin.ui.MusicBeatSubState;
 import funkin.ui.mainmenu.MainMenuState;
-import haxe.Json;
-import openfl.display.Sprite;
+import flixel.addons.transition.FlxTransitionableState;
+import funkin.audio.FunkinSound;
+import flixel.FlxState;
 
 using Lambda;
 using StringTools;
 
+typedef StickerSubStateParams =
+{
+  ?targetState:StickerSubState->FlxState,
+
+  ?stickerSet:String,
+  ?stickerPack:String,
+
+  ?oldStickers:Array<StickerSprite>,
+}
+
+@:nullSafety
 class StickerSubState extends MusicBeatSubState
 {
   public var grpStickers:FlxTypedGroup<StickerSprite>;
 
   // yes... a damn OpenFL sprite!!!
-  public var dipshit:Sprite;
+  // public var dipshit:Sprite;
 
   /**
    * The state to switch to after the stickers are done.
@@ -32,17 +42,24 @@ class StickerSubState extends MusicBeatSubState
    */
   var targetState:StickerSubState->FlxState;
 
+  // what stickers to use
+  var stickerSet:String;
+  var stickerPack:String;
+
   // what "folders" to potentially load from (as of writing only "keys" exist)
   var soundSelections:Array<String> = [];
   // what "folder" was randomly selected
   var soundSelection:String = "";
   var sounds:Array<String> = [];
 
-  public function new(?oldStickers:Array<StickerSprite>, ?targetState:StickerSubState->FlxState):Void
+  public function new(params:StickerSubStateParams):Void
   {
     super();
 
-    this.targetState = (targetState == null) ? ((sticker) -> new MainMenuState()) : targetState;
+    this.stickerSet = params.stickerSet ?? 'stickers-set-1';
+    this.stickerPack = params.stickerPack ?? 'all';
+
+    this.targetState = params.targetState ?? (sticker) -> new MainMenuState();
 
     // todo still
     // make sure that ONLY plays mp3/ogg files
@@ -59,6 +76,9 @@ class StickerSubState extends MusicBeatSubState
       return a.replace('assets/shared/sounds/stickersounds/', '').split('/')[0];
     });
 
+    grpStickers = new FlxTypedGroup<StickerSprite>();
+    add(grpStickers);
+
     // cracked cleanup... yuchh...
     for (i in soundSelections)
     {
@@ -74,7 +94,7 @@ class StickerSubState extends MusicBeatSubState
     soundSelection = FlxG.random.getObject(soundSelections);
 
     var filterFunc = function(a:String) {
-      return a.startsWith('assets/shared/sounds/stickersounds/' + soundSelection + '/');
+      return a.startsWith('assets/shared/sounds/stickersounds/' + this.soundSelection + '/');
     };
     var assetsInList3 = Assets.list();
     sounds = assetsInList3.filter(filterFunc);
@@ -86,15 +106,13 @@ class StickerSubState extends MusicBeatSubState
 
     trace(sounds);
 
-    grpStickers = new FlxTypedGroup<StickerSprite>();
-    add(grpStickers);
-
     // makes the stickers on the most recent camera, which is more often than not... a UI camera!!
-    grpStickers.cameras = [FlxG.cameras.list[FlxG.cameras.list.length - 1]];
+    // grpStickers.cameras = [FlxG.cameras.list[FlxG.cameras.list.length - 1]];
+    grpStickers.cameras = FlxG.cameras.list;
 
-    if (oldStickers != null)
+    if (params.oldStickers != null)
     {
-      for (sticker in oldStickers)
+      for (sticker in params.oldStickers)
       {
         grpStickers.add(sticker);
       }
@@ -108,6 +126,14 @@ class StickerSubState extends MusicBeatSubState
   public function degenStickers():Void
   {
     grpStickers.cameras = FlxG.cameras.list;
+
+    /*
+      if (dipshit != null)
+      {
+        FlxG.removeChild(dipshit);
+        dipshit = null;
+      }
+     */
 
     if (grpStickers.members == null || grpStickers.members.length == 0)
     {
@@ -139,9 +165,9 @@ class StickerSubState extends MusicBeatSubState
       grpStickers.clear();
     }
 
-    var stickerInfo:StickerInfo = new StickerInfo('stickers-set-1');
+    var stickerInfo:StickerInfo = new StickerInfo(this.stickerSet);
     var stickers:Map<String, Array<String>> = new Map<String, Array<String>>();
-    for (stickerSets in stickerInfo.getPack("all"))
+    for (stickerSets in stickerInfo.getPack(this.stickerPack))
     {
       stickers.set(stickerSets, stickerInfo.getStickers(stickerSets));
     }
@@ -150,8 +176,11 @@ class StickerSubState extends MusicBeatSubState
     var yPos:Float = -100;
     while (xPos <= FlxG.width)
     {
-      var stickerSet:String = FlxG.random.getObject(stickers.keyValues());
-      var sticker:String = FlxG.random.getObject(stickers.get(stickerSet));
+      var stickersId:String = FlxG.random.getObject(stickers.keyValues());
+      var stickers = stickers.get(stickersId);
+      if (stickers == null) throw 'Could not get sticker group ${stickersId}';
+
+      var sticker:String = FlxG.random.getObject(stickers);
       var sticky:StickerSprite = new StickerSprite(0, 0, stickerInfo.name, sticker);
       sticky.visible = false;
 
@@ -229,6 +258,20 @@ class StickerSubState extends MusicBeatSubState
 
             FlxTransitionableState.skipNextTransIn = true;
             FlxTransitionableState.skipNextTransOut = true;
+
+            // I think this grabs the screen and puts it under the stickers?
+            // Leaving this commented out rather than stripping it out because it's cool...
+            /*
+              dipshit = new Sprite();
+              var scrn:BitmapData = new BitmapData(FlxG.width, FlxG.height, true, 0x00000000);
+              var mat:Matrix = new Matrix();
+              scrn.draw(grpStickers.cameras[0].canvas, mat);
+
+              var bitmap:Bitmap = new Bitmap(scrn);
+
+              dipshit.addChild(bitmap);
+              // FlxG.addChildBelowMouse(dipshit);
+             */
 
             FlxG.switchState(() -> {
               // TODO: Rework this asset caching stuff
@@ -339,8 +382,10 @@ class StickerInfo
     return this.stickers[stickerName];
   }
 
-  public function getPack(packName:String):Array<String>
+  public function getPack(packName:String, fallback:String = "all"):Array<String>
   {
+    if (!this.stickerPacks.exists(packName)) return this.stickerPacks[fallback];
+
     return this.stickerPacks[packName];
   }
 }

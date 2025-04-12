@@ -1,19 +1,17 @@
 package funkin.ui.freeplay;
 
-import flixel.group.FlxSpriteGroup;
-import flixel.text.FlxText.FlxTextAlign;
-import flixel.text.FlxText;
-import flixel.util.FlxColor;
-import flixel.util.FlxTimer;
-import funkin.graphics.FunkinSprite;
 import funkin.graphics.shaders.PureColor;
 import funkin.input.Controls;
+import flixel.group.FlxSpriteGroup;
+import funkin.graphics.FunkinSprite;
+import flixel.util.FlxColor;
+import flixel.util.FlxTimer;
+import flixel.text.FlxText;
+import flixel.text.FlxText.FlxTextAlign;
 
 @:nullSafety
 class CapsuleOptionsMenu extends FlxSpriteGroup
 {
-  var busy:Bool = false;
-
   var capsuleMenuBG:FunkinSprite;
   var parent:FreeplayState;
 
@@ -23,6 +21,8 @@ class CapsuleOptionsMenu extends FlxSpriteGroup
   var currentInstrumentalIndex:Int = 0;
 
   var currentInstrumental:FlxText;
+
+  var busy:Bool = false;
 
   public function new(parent:FreeplayState, x:Float = 0, y:Float = 0, instIds:Array<String>):Void
   {
@@ -68,16 +68,17 @@ class CapsuleOptionsMenu extends FlxSpriteGroup
       destroy();
       return;
     }
-    @:privateAccess
-    if (parent.controls.BACK)
-    {
-      close();
-      return;
-    }
-
     var changedInst = false;
+
     if (!busy)
     {
+      @:privateAccess
+      if (parent.controls.BACK)
+      {
+        close();
+        return;
+      }
+
       if (parent.getControls().UI_LEFT_P)
       {
         currentInstrumentalIndex = (currentInstrumentalIndex + 1) % instrumentalIds.length;
@@ -88,19 +89,19 @@ class CapsuleOptionsMenu extends FlxSpriteGroup
         currentInstrumentalIndex = (currentInstrumentalIndex - 1 + instrumentalIds.length) % instrumentalIds.length;
         changedInst = true;
       }
-      if (!changedInst && currentInstrumental.text == '') changedInst = true;
-
-      if (changedInst)
-      {
-        currentInstrumental.text = instrumentalIds[currentInstrumentalIndex].toTitleCase() ?? '';
-        if (currentInstrumental.text == '') currentInstrumental.text = 'Default';
-      }
-
       if (parent.getControls().ACCEPT)
       {
         busy = true;
         onConfirm(instrumentalIds[currentInstrumentalIndex] ?? '');
       }
+    }
+
+    if (!changedInst && currentInstrumental.text == '') changedInst = true;
+
+    if (changedInst)
+    {
+      currentInstrumental.text = instrumentalIds[currentInstrumentalIndex].toTitleCase() ?? '';
+      if (currentInstrumental.text == '') currentInstrumental.text = 'Default';
     }
   }
 

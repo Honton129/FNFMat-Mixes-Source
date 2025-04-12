@@ -4,7 +4,6 @@
   "artist": "Kawai Sprite",
   "charter": "ninjamuffin99 + MtH",
   "playData": {
-    "songVariations": ["mat"],
     "ratings": { "easy": 0, "normal": 0, "hard": 1 },
     "stage": "mainStage",
     "characters": { "player": "bf", "opponent": "gf" },

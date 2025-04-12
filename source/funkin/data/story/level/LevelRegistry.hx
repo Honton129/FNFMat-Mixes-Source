@@ -1,9 +1,8 @@
 package funkin.data.story.level;
 
-import funkin.data.story.level.LevelData;
+import funkin.util.SortUtil;
 import funkin.ui.story.Level;
 import funkin.ui.story.ScriptedLevel;
-import funkin.util.SortUtil;
 
 class LevelRegistry extends BaseRegistry<Level, LevelData>
 {
@@ -14,7 +13,7 @@ class LevelRegistry extends BaseRegistry<Level, LevelData>
    */
   public static final LEVEL_DATA_VERSION:thx.semver.Version = "1.0.1";
 
-  public static final LEVEL_DATA_VERSION_RULE:thx.semver.VersionRule = "1.0.x";
+  public static final LEVEL_DATA_VERSION_RULE:thx.semver.VersionRule = ">=1.0.0 <1.1.0";
 
   public static var instance(get, never):LevelRegistry;
   static var _instance:Null<LevelRegistry> = null;
@@ -102,8 +101,7 @@ class LevelRegistry extends BaseRegistry<Level, LevelData>
       "week5",
       "week6",
       "week7",
-      "weekend1",
-      "weekend2"
+      "weekend1"
     ];
   }
 

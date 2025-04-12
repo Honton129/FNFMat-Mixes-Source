@@ -1,23 +1,23 @@
 package funkin.play;
 
-import flixel.FlxG;
+import flixel.FlxState;
+import funkin.ui.story.StoryMenuState;
+import funkin.data.freeplay.player.PlayerRegistry;
 import flixel.addons.transition.FlxTransitionableState;
-import flixel.group.FlxSpriteGroup;
+import flixel.FlxG;
+import flixel.group.FlxSpriteGroup.FlxTypedSpriteGroup;
 import flixel.math.FlxMath;
 import flixel.text.FlxText;
 import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
 import flixel.util.FlxColor;
-import flixel.util.FlxTimer;
 import funkin.audio.FunkinSound;
 import funkin.data.song.SongRegistry;
+import funkin.ui.freeplay.FreeplayState;
 import funkin.graphics.FunkinSprite;
-import funkin.play.PlayState;
 import funkin.play.cutscene.VideoCutscene;
 import funkin.ui.AtlasText;
 import funkin.ui.MusicBeatSubState;
-import funkin.ui.freeplay.FreeplayState;
-import funkin.ui.transition.StickerSubState;
 
 /**
  * Parameters for initializing the PauseSubState.
@@ -122,7 +122,10 @@ class PauseSubState extends MusicBeatSubState
    * Disallow input until transitions are complete!
    * This prevents the pause menu from immediately closing when opened, among other things.
    */
-  public var allowInput:Bool = false;
+  public var allowInput:Bool = true;
+
+  // If this is true, it means we are frame 1 of our substate.
+  var justOpened:Bool = true;
 
   /**
    * The entries currently displayed in the pause menu.
@@ -164,14 +167,10 @@ class PauseSubState extends MusicBeatSubState
   var metadataDeaths:FlxText;
 
   /**
-   * A text object which displays the current song's composer.
+   * A text object which displays the current song's artist.
+   * Fades to the charter after a period before fading back.
    */
   var metadataArtist:FlxText;
-
-  /**
-   * A text object which displays the current song's charter.
-   */
-  var metadataCharter:FlxText;
 
   /**
    * The actual text objects for the menu entries.
@@ -213,6 +212,8 @@ class PauseSubState extends MusicBeatSubState
     regenerateMenu();
 
     transitionIn();
+
+    startCharterTimer();
   }
 
   /**
@@ -232,6 +233,8 @@ class PauseSubState extends MusicBeatSubState
   public override function destroy():Void
   {
     super.destroy();
+    charterFadeTween.cancel();
+    charterFadeTween = null;
     pauseMusic.stop();
   }
 
@@ -289,25 +292,16 @@ class PauseSubState extends MusicBeatSubState
     metadataSong.scrollFactor.set(0, 0);
     metadata.add(metadataSong);
 
-    metadataArtist = new FlxText(20, metadataSong.y + 32, FlxG.width - 40, 'Composer: ${Constants.DEFAULT_ARTIST}');
+    metadataArtist = new FlxText(20, metadataSong.y + 32, FlxG.width - 40, 'Artist: ${Constants.DEFAULT_ARTIST}');
     metadataArtist.setFormat(Paths.font('vcr.ttf'), 32, FlxColor.WHITE, FlxTextAlign.RIGHT);
     if (PlayState.instance?.currentChart != null)
     {
-      metadataArtist.text = 'Composer: ${PlayState.instance.currentChart.songArtist}';
+      metadataArtist.text = 'Artist: ${PlayState.instance.currentChart.songArtist}';
     }
     metadataArtist.scrollFactor.set(0, 0);
     metadata.add(metadataArtist);
 
-    metadataCharter = new FlxText(20, metadataArtist.y + 32, FlxG.width - 40, 'Charter: ${Constants.DEFAULT_CHARTER}');
-    metadataCharter.setFormat(Paths.font('vcr.ttf'), 32, FlxColor.WHITE, FlxTextAlign.RIGHT);
-    if (PlayState.instance?.currentChart != null)
-    {
-      metadataCharter.text = 'Charter: ${PlayState.instance.currentChart.charter}';
-    }
-    metadataCharter.scrollFactor.set(0, 0);
-    metadata.add(metadataCharter);
-
-    var metadataDifficulty:FlxText = new FlxText(20, metadataCharter.y + 32, FlxG.width - 40, 'Difficulty: ');
+    var metadataDifficulty:FlxText = new FlxText(20, metadataArtist.y + 32, FlxG.width - 40, 'Difficulty: ');
     metadataDifficulty.setFormat(Paths.font('vcr.ttf'), 32, FlxColor.WHITE, FlxTextAlign.RIGHT);
     if (PlayState.instance?.currentDifficulty != null)
     {
@@ -316,7 +310,7 @@ class PauseSubState extends MusicBeatSubState
     metadataDifficulty.scrollFactor.set(0, 0);
     metadata.add(metadataDifficulty);
 
-    metadataDeaths = new FlxText(20, metadataDifficulty.y + 32, FlxG.width - 40, '${PlayState.instance?.deathCounter} Game Overs');
+    metadataDeaths = new FlxText(20, metadataDifficulty.y + 32, FlxG.width - 40, '${PlayState.instance?.deathCounter} Blue Balls');
     metadataDeaths.setFormat(Paths.font('vcr.ttf'), 32, FlxColor.WHITE, FlxTextAlign.RIGHT);
     metadataDeaths.scrollFactor.set(0, 0);
     metadata.add(metadataDeaths);
@@ -328,6 +322,62 @@ class PauseSubState extends MusicBeatSubState
     metadata.add(metadataPractice);
 
     updateMetadataText();
+  }
+
+  var charterFadeTween:Null<FlxTween> = null;
+
+  function startCharterTimer():Void
+  {
+    charterFadeTween = FlxTween.tween(metadataArtist, {alpha: 0.0}, CHARTER_FADE_DURATION,
+      {
+        startDelay: CHARTER_FADE_DELAY,
+        ease: FlxEase.quartOut,
+        onComplete: (_) -> {
+          if (PlayState.instance?.currentChart != null)
+          {
+            metadataArtist.text = 'Charter: ${PlayState.instance.currentChart.charter ?? 'Unknown'}';
+          }
+          else
+          {
+            metadataArtist.text = 'Charter: ${Constants.DEFAULT_CHARTER}';
+          }
+
+          FlxTween.tween(metadataArtist, {alpha: 1.0}, CHARTER_FADE_DURATION,
+            {
+              ease: FlxEase.quartOut,
+              onComplete: (_) -> {
+                startArtistTimer();
+              }
+            });
+        }
+      });
+  }
+
+  function startArtistTimer():Void
+  {
+    charterFadeTween = FlxTween.tween(metadataArtist, {alpha: 0.0}, CHARTER_FADE_DURATION,
+      {
+        startDelay: CHARTER_FADE_DELAY,
+        ease: FlxEase.quartOut,
+        onComplete: (_) -> {
+          if (PlayState.instance?.currentChart != null)
+          {
+            metadataArtist.text = 'Artist: ${PlayState.instance.currentChart.songArtist}';
+          }
+          else
+          {
+            metadataArtist.text = 'Artist: ${Constants.DEFAULT_ARTIST}';
+          }
+
+          FlxTween.tween(metadataArtist, {alpha: 1.0}, CHARTER_FADE_DURATION,
+            {
+              ease: FlxEase.quartOut,
+              onComplete: (_) -> {
+                startCharterTimer();
+              }
+            });
+        }
+      });
   }
 
   /**
@@ -344,10 +394,6 @@ class PauseSubState extends MusicBeatSubState
       FlxTween.tween(child, {alpha: 1, y: child.y + 5}, 1.8, {ease: FlxEase.quartOut, startDelay: delay});
       delay += 0.1;
     }
-
-    new FlxTimer().start(0.2, (_) -> {
-      allowInput = true;
-    });
   }
 
   // ===============
@@ -370,14 +416,17 @@ class PauseSubState extends MusicBeatSubState
       changeSelection(1);
     }
 
-    if (controls.ACCEPT)
+    if (controls.ACCEPT && !justOpened)
     {
       currentMenuEntries[currentEntry].callback(this);
     }
-    else if (controls.PAUSE)
+    else if (controls.PAUSE && !justOpened)
     {
       resume(this);
     }
+
+    // we only want justOpened to be true for 1 single frame, when we first get into the pause menu substate
+    justOpened = false;
 
     #if FEATURE_DEBUG_FUNCTIONS
     // to pause the game and get screenshots easy, press H on pause menu!
@@ -387,6 +436,7 @@ class PauseSubState extends MusicBeatSubState
 
       metadata.visible = visible;
       menuEntryText.visible = visible;
+      background.visible = visible;
       this.bgColor = visible ? 0x99000000 : 0x00000000; // 60% or fully transparent black
     }
     #end
@@ -436,6 +486,8 @@ class PauseSubState extends MusicBeatSubState
   {
     // If targetMode is null, keep the current mode.
     if (targetMode == null) targetMode = this.currentMode;
+
+    var previousMode:PauseMode = this.currentMode;
     this.currentMode = targetMode;
 
     resetSelection();
@@ -546,7 +598,7 @@ class PauseSubState extends MusicBeatSubState
     switch (this.currentMode)
     {
       case Standard | Difficulty:
-        metadataDeaths.text = '${PlayState.instance?.deathCounter} Game Overs';
+        metadataDeaths.text = '${PlayState.instance?.deathCounter} Blue Balls';
       case Charting:
         metadataDeaths.text = 'Chart Editor Preview';
       case Conversation:
@@ -596,6 +648,7 @@ class PauseSubState extends MusicBeatSubState
     // So if you switch difficulty on the last song of a week you get a really low overall score.
     PlayStatePlaylist.campaignScore = 0;
     PlayStatePlaylist.campaignDifficulty = difficulty;
+    PlayState.instance.previousDifficulty = PlayState.instance.currentDifficulty;
     PlayState.instance.currentDifficulty = PlayStatePlaylist.campaignDifficulty;
 
     FreeplayState.rememberedDifficulty = difficulty;
@@ -684,15 +737,25 @@ class PauseSubState extends MusicBeatSubState
     FlxTransitionableState.skipNextTransIn = true;
     FlxTransitionableState.skipNextTransOut = true;
 
+    var targetState:funkin.ui.transition.StickerSubState->FlxState = (PlayStatePlaylist.isStoryMode) ? (sticker) -> new StoryMenuState(sticker) : (sticker) ->
+      FreeplayState.build(sticker);
+
+    // Do this AFTER because this resets the value of isStoryMode!
     if (PlayStatePlaylist.isStoryMode)
     {
       PlayStatePlaylist.reset();
-      state.openSubState(new funkin.ui.transition.StickerSubState(null, (sticker) -> new funkin.ui.story.StoryMenuState(sticker)));
     }
-    else
+
+    var playerCharacterId = PlayerRegistry.instance.getCharacterOwnerId(PlayState.instance.currentChart.characters.player);
+    var stickerSet = (playerCharacterId == "pico") ? "stickers-set-2" : "stickers-set-1";
+    var stickerPack = switch (PlayState.instance.currentChart.song.id)
     {
-      state.openSubState(new funkin.ui.transition.StickerSubState(null, (sticker) -> FreeplayState.build(null, sticker)));
-    }
+      case "tutorial": "tutorial";
+      case "darnell" | "lit-up" | "2hot": "weekend";
+      default: "all";
+    };
+
+    state.openSubState(new funkin.ui.transition.StickerSubState({targetState: targetState, stickerSet: stickerSet, stickerPack: stickerPack}));
   }
 
   /**

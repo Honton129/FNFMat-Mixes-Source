@@ -9,22 +9,28 @@ import flixel.util.FlxColor;
 import flixel.util.FlxDirectionFlags;
 import flixel.util.FlxTimer;
 import flixel.util.typeLimit.NextState;
-import funkin.audio.FunkinSound;
 import funkin.audio.visualize.SpectogramSprite;
-import funkin.graphics.FunkinSprite;
 import funkin.graphics.shaders.ColorSwap;
 import funkin.graphics.shaders.LeftMaskShader;
-import funkin.graphics.shaders.TitleOutline;
-import funkin.ui.AtlasText;
+import funkin.graphics.FunkinSprite;
 import funkin.ui.MusicBeatState;
-import funkin.ui.mainmenu.MainMenuState;
+import funkin.graphics.shaders.TitleOutline;
+import funkin.audio.FunkinSound;
+import funkin.ui.AtlasText;
 import openfl.Assets;
 import openfl.display.Sprite;
 import openfl.events.AsyncErrorEvent;
+import funkin.ui.mainmenu.MainMenuState;
 import openfl.events.MouseEvent;
 import openfl.events.NetStatusEvent;
 import openfl.media.Video;
 import openfl.net.NetStream;
+#if FEATURE_NEWGROUNDS
+import funkin.api.newgrounds.Medals;
+#end
+import funkin.ui.freeplay.FreeplayState;
+import openfl.display.BlendMode;
+import funkin.save.Save;
 
 #if desktop
 #end
@@ -44,10 +50,6 @@ class TitleState extends MusicBeatState
   var lastBeat:Int = 0;
   var swagShader:ColorSwap;
 
-  var video:Video;
-  var netStream:NetStream;
-  var overlay:Sprite;
-
   override public function create():Void
   {
     super.create();
@@ -59,45 +61,11 @@ class TitleState extends MusicBeatState
 
     // DEBUG BULLSHIT
 
-    // netConnection.addEventListener(MouseEvent.MOUSE_DOWN, overlay_onMouseDown);
     if (!initialized) new FlxTimer().start(1, function(tmr:FlxTimer) {
       startIntro();
     });
     else
       startIntro();
-  }
-
-  function client_onMetaData(metaData:Dynamic)
-  {
-    video.attachNetStream(netStream);
-
-    video.width = video.videoWidth;
-    video.height = video.videoHeight;
-    // video.
-  }
-
-  function netStream_onAsyncError(event:AsyncErrorEvent):Void
-  {
-    trace("Error loading video");
-  }
-
-  function netConnection_onNetStatus(event:NetStatusEvent):Void
-  {
-    if (event.info.code == 'NetStream.Play.Complete')
-    {
-      startIntro();
-    }
-
-    trace(event.toString());
-  }
-
-  function overlay_onMouseDown(event:MouseEvent):Void
-  {
-    netStream.soundTransform.volume = 0.2;
-    netStream.soundTransform.pan = -1;
-    // netStream.play(Paths.file('music/kickstarterTrailer.mp4'));
-
-    FlxG.stage.removeChild(overlay);
   }
 
   var logoBl:FlxSprite;
@@ -251,14 +219,11 @@ class TitleState extends MusicBeatState
   {
     FlxG.bitmapLog.add(FlxG.camera.buffer);
 
-    #if HAS_PITCH
-    if (FlxG.keys.pressed.UP) FlxG.sound.music.pitch += 0.5 * elapsed;
-
-    if (FlxG.keys.pressed.DOWN) FlxG.sound.music.pitch -= 0.5 * elapsed;
-    #end
-
     #if desktop
-    if (FlxG.keys.justPressed.ESCAPE)
+    // Pressing BACK on the title screen should close the game.
+    // This lets you exit without leaving fullscreen mode.
+    // Only applicable on desktop.
+    if (controls.BACK)
     {
       openfl.Lib.application.window.close();
     }
@@ -266,8 +231,22 @@ class TitleState extends MusicBeatState
 
     Conductor.instance.update();
 
-    if (FlxG.keys.justPressed.I) FlxTween.tween(outlineShaderShit, {funnyX: 50, funnyY: 50}, 0.6, {ease: FlxEase.quartOut});
+    /* if (FlxG.onMobile)
+          {
+      if (gfDance != null)
+      {
+        gfDance.x = (FlxG.width / 2) + (FlxG.accelerometer.x * (FlxG.width / 2));
+        // gfDance.y = (FlxG.height / 2) + (FlxG.accelerometer.y * (FlxG.height / 2));
+      }
+          }
+     */
+    if (FlxG.keys.justPressed.I)
+    {
+      FlxTween.tween(outlineShaderShit, {funnyX: 50, funnyY: 50}, 0.6, {ease: FlxEase.quartOut});
+    }
     if (FlxG.keys.pressed.D) outlineShaderShit.funnyX += 1;
+    // outlineShaderShit.xPos.value[0] += 1;
+
     if (FlxG.keys.justPressed.Y)
     {
       FlxTween.cancelTweensOf(FlxG.stage.window, ['x', 'y']);
@@ -279,6 +258,7 @@ class TitleState extends MusicBeatState
 
     // do controls.PAUSE | controls.ACCEPT instead?
     var pressedEnter:Bool = FlxG.keys.justPressed.ENTER;
+
     var gamepad:FlxGamepad = FlxG.gamepads.lastActive;
 
     if (gamepad != null)
@@ -298,13 +278,20 @@ class TitleState extends MusicBeatState
     if (pressedEnter && !transitioning && skippedIntro)
     {
       if (FlxG.sound.music != null) FlxG.sound.music.onComplete = null;
-
+      // netStream.play(Paths.file('music/kickstarterTrailer.mp4'));
       titleText.animation.play('press');
       FlxG.camera.flash(FlxColor.WHITE, 1);
       FunkinSound.playOnce(Paths.sound('confirmMenu'), 0.7);
       transitioning = true;
 
+      #if FEATURE_NEWGROUNDS
+      // Award the "Start Game" medal.
+      Medals.award(Medal.StartGame);
+      funkin.api.newgrounds.Events.logStartGame();
+      #end
+
       var targetState:NextState = () -> new MainMenuState();
+
       new FlxTimer().start(2, function(tmr:FlxTimer) {
         // These assets are very unlikely to be used for the rest of gameplay, so it unloads them from cache/memory
         // Saves about 50mb of RAM or so???
@@ -315,6 +302,7 @@ class TitleState extends MusicBeatState
         // ngSpr??
         FlxG.switchState(targetState);
       });
+      // FunkinSound.playOnce(Paths.music('titleShoot'), 0.7);
     }
     if (pressedEnter && !skippedIntro && initialized) skipIntro();
 
@@ -434,13 +422,13 @@ class TitleState extends MusicBeatState
           switch (i + 1)
           {
             case 1:
-              createCoolText(['The', 'Mat Mixes Team']);
+              createCoolText(['The', 'Funkin Crew Inc']);
             case 3:
               addMoreText('presents');
             case 4:
               deleteCoolText();
             case 5:
-              createCoolText(['Not associated', 'with']);
+              createCoolText(['In association', 'with']);
             case 7:
               addMoreText('newgrounds');
               if (ngSpr != null) ngSpr.visible = true;
@@ -454,14 +442,16 @@ class TitleState extends MusicBeatState
             case 12:
               deleteCoolText();
             case 13:
-              addMoreText('FNF');
+              addMoreText('Friday');
             case 14:
-              // MAT-ING TIME GUYS!
-              if (curWacky[0] == "mating") addMoreText('Mating');
+              // easter egg for when the game is trending with the wrong spelling
+              // the random intro text would be "trending--only on x"
+
+              if (curWacky[0] == "trending") addMoreText('Nigth');
               else
-                addMoreText('Mat');
+                addMoreText('Night');
             case 15:
-              addMoreText('Mixes');
+              addMoreText('Funkin');
             case 16:
               skipIntro();
           }
