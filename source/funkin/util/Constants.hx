@@ -28,6 +28,11 @@ class Constants
   public static var VERSION(get, never):String;
 
   /**
+   * The mod's version number.
+   */
+  public static var VERSION_MOD:String = "v0.1.0 Alpha";
+
+  /**
    * The generatedBy string embedded in the chart files made by this application.
    */
   public static var GENERATED_BY(get, never):String;
@@ -151,7 +156,7 @@ class Constants
   /**
    * Color for the preloader progress bar
    */
-  public static final COLOR_PRELOADER_BAR:FlxColor = 0xFFA4FF11;
+  public static final COLOR_PRELOADER_BAR:FlxColor = 0xFFFF2828;
 
   /**
    * Color for the preloader site lock background

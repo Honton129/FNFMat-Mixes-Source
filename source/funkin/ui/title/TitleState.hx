@@ -9,28 +9,25 @@ import flixel.util.FlxColor;
 import flixel.util.FlxDirectionFlags;
 import flixel.util.FlxTimer;
 import flixel.util.typeLimit.NextState;
+import funkin.audio.FunkinSound;
 import funkin.audio.visualize.SpectogramSprite;
+import funkin.graphics.FunkinSprite;
 import funkin.graphics.shaders.ColorSwap;
 import funkin.graphics.shaders.LeftMaskShader;
-import funkin.graphics.FunkinSprite;
-import funkin.ui.MusicBeatState;
 import funkin.graphics.shaders.TitleOutline;
-import funkin.audio.FunkinSound;
+import funkin.save.Save;
 import funkin.ui.AtlasText;
+import funkin.ui.MusicBeatState;
+import funkin.ui.freeplay.FreeplayState;
+import funkin.ui.mainmenu.MainMenuState;
 import openfl.Assets;
+import openfl.display.BlendMode;
 import openfl.display.Sprite;
 import openfl.events.AsyncErrorEvent;
-import funkin.ui.mainmenu.MainMenuState;
 import openfl.events.MouseEvent;
 import openfl.events.NetStatusEvent;
 import openfl.media.Video;
 import openfl.net.NetStream;
-#if FEATURE_NEWGROUNDS
-import funkin.api.newgrounds.Medals;
-#end
-import funkin.ui.freeplay.FreeplayState;
-import openfl.display.BlendMode;
-import funkin.save.Save;
 
 #if desktop
 #end
@@ -284,12 +281,6 @@ class TitleState extends MusicBeatState
       FunkinSound.playOnce(Paths.sound('confirmMenu'), 0.7);
       transitioning = true;
 
-      #if FEATURE_NEWGROUNDS
-      // Award the "Start Game" medal.
-      Medals.award(Medal.StartGame);
-      funkin.api.newgrounds.Events.logStartGame();
-      #end
-
       var targetState:NextState = () -> new MainMenuState();
 
       new FlxTimer().start(2, function(tmr:FlxTimer) {
@@ -422,13 +413,13 @@ class TitleState extends MusicBeatState
           switch (i + 1)
           {
             case 1:
-              createCoolText(['The', 'Funkin Crew Inc']);
+              createCoolText(['The', 'Mat Mixes Team']);
             case 3:
               addMoreText('presents');
             case 4:
               deleteCoolText();
             case 5:
-              createCoolText(['In association', 'with']);
+              createCoolText(['Not associated', 'with']);
             case 7:
               addMoreText('newgrounds');
               if (ngSpr != null) ngSpr.visible = true;
@@ -442,16 +433,14 @@ class TitleState extends MusicBeatState
             case 12:
               deleteCoolText();
             case 13:
-              addMoreText('Friday');
+              addMoreText('FNF');
             case 14:
-              // easter egg for when the game is trending with the wrong spelling
-              // the random intro text would be "trending--only on x"
-
-              if (curWacky[0] == "trending") addMoreText('Nigth');
+              // MAT-ING TIME GUYS!
+              if (curWacky[0] == "mat-ing") addMoreText('Mat-ing');
               else
-                addMoreText('Night');
+                addMoreText('Mat');
             case 15:
-              addMoreText('Funkin');
+              addMoreText('Mixes');
             case 16:
               skipIntro();
           }

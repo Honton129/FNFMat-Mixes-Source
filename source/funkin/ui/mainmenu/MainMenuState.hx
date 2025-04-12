@@ -201,7 +201,7 @@ class MainMenuState extends MusicBeatState
 
   function selectMerch()
   {
-    WindowUtil.openURL(Constants.URL_MERCH);
+    WindowUtil.openURL(Constants.URL_MERCH_FALLBACK);
   }
   #end
 

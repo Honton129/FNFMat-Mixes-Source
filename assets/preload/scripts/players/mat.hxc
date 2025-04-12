@@ -9,6 +9,8 @@ class MatPlayableCharacter extends PlayableCharacter
 	}
 
   override function isUnlocked():Bool {
-    return Save.instance.hasBeatenLevel('week1');
+		// TEMPORAL FOR TESTING PURPOSES
+		// Should be "weekend2" when it releases!
+    return Save.instance.hasBeatenLevel('tutorial');
   }
 }

@@ -2,8 +2,8 @@ package funkin.save;
 
 import flixel.util.FlxSave;
 import funkin.input.Controls.Device;
-import funkin.play.scoring.Scoring;
 import funkin.play.scoring.Scoring.ScoringRank;
+import funkin.play.scoring.Scoring;
 import funkin.save.migrator.RawSaveData_v1_0_0;
 import funkin.save.migrator.SaveDataMigrator;
 import funkin.ui.debug.charting.ChartEditorState.ChartEditorLiveInputStyle;
@@ -12,10 +12,6 @@ import funkin.ui.debug.stageeditor.StageEditorState.StageEditorTheme;
 import funkin.util.FileUtil;
 import funkin.util.SerializerUtil;
 import thx.semver.Version;
-#if FEATURE_NEWGROUNDS
-import funkin.api.newgrounds.Medals;
-import funkin.api.newgrounds.Leaderboards;
-#end
 
 @:nullSafety
 class Save
@@ -24,11 +20,11 @@ class Save
   public static final SAVE_DATA_VERSION_RULE:thx.semver.VersionRule = ">=2.1.0 <2.2.0";
 
   // We load this version's saves from a new save path, to maintain SOME level of backwards compatibility.
-  static final SAVE_PATH:String = 'FunkinCrew';
-  static final SAVE_NAME:String = 'Funkin';
+  static final SAVE_PATH:String = 'MatMixes';
+  static final SAVE_NAME:String = 'FunkinMat';
 
-  static final SAVE_PATH_LEGACY:String = 'ninjamuffin99';
-  static final SAVE_NAME_LEGACY:String = 'funkin';
+  static final SAVE_PATH_LEGACY:String = 'matdoesstuff';
+  static final SAVE_NAME_LEGACY:String = 'mat';
 
   /**
    * We always use this save slot.
@@ -86,13 +82,6 @@ class Save
       volume: 1.0,
       mute: false,
 
-      api:
-        {
-          newgrounds:
-            {
-              sessionId: null,
-            }
-        },
       scores:
         {
           // No saved scores.
@@ -200,23 +189,6 @@ class Save
   function get_modOptions():Map<String, Dynamic>
   {
     return data.mods.modOptions;
-  }
-
-  /**
-   * The current session ID for the logged-in Newgrounds user, or null if the user is cringe.
-   */
-  public var ngSessionId(get, set):Null<String>;
-
-  function get_ngSessionId():Null<String>
-  {
-    return data.api.newgrounds.sessionId;
-  }
-
-  function set_ngSessionId(value:Null<String>):Null<String>
-  {
-    data.api.newgrounds.sessionId = value;
-    flush();
-    return data.api.newgrounds.sessionId;
   }
 
   public var enabledModIds(get, set):Array<String>;
@@ -729,11 +701,6 @@ class Save
     {
       // Directly set the highscore.
       setSongScore(songId, difficultyId, newScoreData);
-
-      #if FEATURE_NEWGROUNDS
-      Leaderboards.submitSongScore(songId, difficultyId, newScoreData.score);
-      #end
-
       return;
     }
 
@@ -1222,8 +1189,6 @@ typedef RawSaveData =
    */
   var version:Version;
 
-  var api:SaveApiData;
-
   /**
    * The user's saved scores.
    */
@@ -1254,16 +1219,6 @@ typedef RawSaveData =
    */
   var optionsStageEditor:SaveDataStageEditorOptions;
 };
-
-typedef SaveApiData =
-{
-  var newgrounds:SaveApiNewgroundsData;
-}
-
-typedef SaveApiNewgroundsData =
-{
-  var sessionId:Null<String>;
-}
 
 typedef SaveDataUnlocks =
 {

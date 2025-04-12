@@ -2,8 +2,8 @@ package funkin.save.migrator;
 
 import funkin.save.Save;
 import funkin.save.migrator.RawSaveData_v1_0_0;
-import thx.semver.Version;
 import funkin.util.VersionUtil;
+import thx.semver.Version;
 
 @:nullSafety
 class SaveDataMigrator
@@ -72,8 +72,6 @@ class SaveDataMigrator
 
     result.volume = inputSaveData.volume;
     result.mute = inputSaveData.mute;
-
-    result.ngSessionId = inputSaveData.sessionId;
 
     // TODO: Port over the save data from the legacy save data format.
     migrateLegacyScores(result, inputSaveData);

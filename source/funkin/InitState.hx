@@ -1,38 +1,39 @@
 package funkin;
 
+import flixel.addons.transition.FlxTransitionableState;
+import flixel.addons.transition.FlxTransitionSprite.GraphicTransTileDiamond;
+import flixel.addons.transition.TransitionData;
 import flixel.FlxSprite;
 import flixel.FlxState;
-import flixel.addons.transition.FlxTransitionSprite.GraphicTransTileDiamond;
-import flixel.addons.transition.FlxTransitionableState;
-import flixel.addons.transition.TransitionData;
 import flixel.graphics.FlxGraphic;
 import flixel.math.FlxPoint;
 import flixel.math.FlxRect;
-import funkin.util.TrackerUtil;
 import flixel.system.debug.log.LogStyle;
 import flixel.util.FlxColor;
 import funkin.data.dialogue.conversation.ConversationRegistry;
 import funkin.data.dialogue.dialoguebox.DialogueBoxRegistry;
 import funkin.data.dialogue.speaker.SpeakerRegistry;
-import funkin.data.event.SongEventRegistry;
 import funkin.data.freeplay.album.AlbumRegistry;
 import funkin.data.freeplay.player.PlayerRegistry;
 import funkin.data.freeplay.style.FreeplayStyleRegistry;
 import funkin.data.notestyle.NoteStyleRegistry;
 import funkin.data.song.SongRegistry;
+import funkin.data.event.SongEventRegistry;
 import funkin.data.stage.StageRegistry;
 import funkin.data.story.level.LevelRegistry;
 import funkin.modding.module.ModuleHandler;
-import funkin.play.PlayStatePlaylist;
 import funkin.play.character.CharacterData.CharacterDataParser;
 import funkin.play.notes.notekind.NoteKindManager;
+import funkin.play.PlayStatePlaylist;
 import funkin.ui.debug.charting.ChartEditorState;
 import funkin.ui.title.TitleState;
 import funkin.ui.transition.LoadingState;
 import funkin.util.CLIUtil;
-import funkin.util.TimerUtil;
-import funkin.util.WindowUtil;
+import funkin.util.CLIUtil.CLIParams;
 import funkin.util.macro.MacroUtil;
+import funkin.util.TimerUtil;
+import funkin.util.TrackerUtil;
+import funkin.util.WindowUtil;
 import openfl.display.BitmapData;
 #if FEATURE_DISCORD_RPC
 import funkin.api.discord.DiscordClient;
@@ -80,6 +81,10 @@ class InitState extends FlxState
     WindowUtil.initWindowEvents();
     // Disable the thing on Windows where it tries to send a bug report to Microsoft because why do they care?
     WindowUtil.disableCrashHandler();
+
+    #if FEATURE_DEBUG_TRACY
+    funkin.util.WindowUtil.initTracy();
+    #end
 
     // This ain't a pixel art game! (most of the time)
     FlxSprite.defaultAntialiasing = true;
@@ -179,6 +184,8 @@ class InitState extends FlxState
     ModuleHandler.loadModuleCache();
     ModuleHandler.callOnCreate();
 
+    funkin.input.Cursor.hide();
+
     trace('Parsing game data took: ${TimerUtil.ms(perfStart)}');
   }
 
@@ -212,9 +219,9 @@ class InitState extends FlxState
     #elseif CHARTING
     // -DCHARTING
     FlxG.switchState(() -> new funkin.ui.debug.charting.ChartEditorState());
-    #elseif STAGEEDITOR
-    // -DSTAGEEDITOR
-    FlxG.switchState(() -> new funkin.ui.debug.stageeditor.StageEditorState());
+    #elseif STAGEBUILD
+    // -DSTAGEBUILD
+    FlxG.switchState(() -> new funkin.ui.debug.stage.StageBuilderState());
     #elseif RESULTS
     // -DRESULTS
     FlxG.switchState(() -> new funkin.play.ResultState(
@@ -222,7 +229,7 @@ class InitState extends FlxState
         storyMode: true,
         title: "Cum Song Erect by Kawai Sprite",
         songId: "cum",
-        characterId: "pico-playable",
+        characterId: "pico",
         difficultyId: "nightmare",
         isNewHighscore: true,
         scoreData:
@@ -238,9 +245,10 @@ class InitState extends FlxState
                 combo: 69,
                 maxCombo: 69,
                 totalNotesHit: 140,
-                totalNotes: 190
+                totalNotes: 240
               }
             // 2400 total notes = 7% = LOSS
+            // 275 total notes = 69% = NICE
             // 240 total notes = 79% = GOOD
             // 230 total notes = 82% = GREAT
             // 210 total notes = 91% = EXCELLENT
