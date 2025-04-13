@@ -16,7 +16,7 @@ haxelib git funkin.vis https://github.com/FunkinCrew/funkVis 1966f8fbbbc509ed90d
 haxelib git grig.audio https://gitlab.com/haxe-grig/grig.audio.git 57f5d47f2533fd0c3dcd025a86cb86c0dfa0b6d2 src
 haxelib install hamcrest 3.0.0
 haxelib git haxeui-core https://github.com/haxeui/haxeui-core 74ba53387eab0c4c2d3825e103fe70df8e46d9b1
-haxelib git haxeui-flixel https://github.com/haxeui/haxeui-flixel 34fe148e45292439a9c3caf00890c93bcc6f9453
+haxelib git haxeui-flixel https://github.com/haxeui/haxeui-flixel 34fe148e45292439a9c3caf00890c93bcc6f9453 --skip-dependencies
 haxelib git hscript https://github.com/FunkinCrew/hscript 27c86f9a761c1d16d4433c4cf252eccb7b2e18de
 haxelib git hxcpp https://github.com/HaxeFoundation/hxcpp v4.3.75
 haxelib git hxcpp-debug-server https://github.com/FunkinCrew/hxcpp-debugger 147294123f983e35f50a966741474438069a7a8f hxcpp-debug-server

@@ -226,7 +226,7 @@ class Project extends HXProject {
   static final FEATURE_STAGE_EDITOR:FeatureFlag = "FEATURE_STAGE_EDITOR";
 
 	/**
-	 * `-DFEATURE_RESULTS_DEBUG
+	 * `-DFEATURE_RESULTS_DEBUG`
 	 * If this flag is enabled, a debug menu for Results screen will be accessible from the debug menu.
 	 */
 	static final FEATURE_RESULTS_DEBUG:FeatureFlag = "FEATURE_RESULTS_DEBUG";

@@ -3,14 +3,14 @@ package;
 import flixel.FlxGame;
 import flixel.FlxState;
 import funkin.Preferences;
-import funkin.util.logging.CrashHandler;
-import funkin.ui.debug.MemoryCounter;
 import funkin.save.Save;
+import funkin.ui.debug.MemoryCounter;
+import funkin.util.logging.CrashHandler;
 import haxe.ui.Toolkit;
+import openfl.Lib;
 import openfl.display.FPS;
 import openfl.display.Sprite;
 import openfl.events.Event;
-import openfl.Lib;
 import openfl.media.Video;
 import openfl.net.NetStream;
 
