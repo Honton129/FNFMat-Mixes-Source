@@ -1,3 +1,5 @@
+import funkin.play.PauseSubState;
+import funkin.play.GameOverSubState;
 import funkin.play.character.BaseCharacter;
 import funkin.play.character.CharacterDataParser;
 import funkin.play.character.SparrowCharacter;
@@ -31,12 +33,31 @@ class MatDarkCharacter extends SparrowCharacter {
 	function onCreate(event:ScriptEvent) {
 		super.onCreate(event);
 
-		normalChar = CharacterDataParser.fetchCharacter('mat');
+		normalChar = CharacterDataParser.fetchCharacter('mat-playable');
 		normalChar.zIndex = 199;
 		normalChar.alpha = 0;
-		normalChar.flipX = true;
-	
+		normalChar.flipX = false;
+
 		PlayState.instance.currentStage.add(normalChar);
 		PlayState.instance.currentStage.refresh(); // Apply z-index.
+
+		GameOverSubState.musicSuffix = '-pico';
+		GameOverSubState.blueBallSuffix = '-mat';
+
+		PauseSubState.musicSuffix = '-mat';
+	}
+
+    override function onGameOver(event:ScriptEvent):Void {
+		super.onGameOver(event);
+	}
+
+	override function onSongRetry(event:ScriptEvent):Void {
+		super.onSongRetry(event);
+
+		// Reset to standard death animation.
+		GameOverSubState.musicSuffix = '-pico';
+		GameOverSubState.blueBallSuffix = '-mat';
+
+		PauseSubState.musicSuffix = '-mat';
 	}
 }

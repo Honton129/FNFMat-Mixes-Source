@@ -4,8 +4,8 @@
   "ownedChars": [
     "mat",
     "mat-dark",
+    "mat-opponent-dark",
     "mat-playable",
-    "mat-playable-dark",
     "mat-car",
     "mat-christmas",
     "mat-pixel"

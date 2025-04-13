@@ -59,6 +59,7 @@ class RosesSong extends Song {
     var targetDialogue = 'roses';
 
     if (PlayState.instance.currentVariation == 'pico') targetDialogue += "-pico";
+    if (PlayState.instance.currentVariation == 'mat') targetDialogue += "-mat";
     if (!Preferences.naughtyness) targetDialogue += "-censored";
 
     trace('Playing dialogue...');

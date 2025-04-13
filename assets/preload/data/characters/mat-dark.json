@@ -1,11 +1,11 @@
 {
   "version": "1.0.0",
   "renderType": "sparrow",
-  "offsets": [0, -50],
+  "offsets": [0, 0],
   "danceEvery": 1,
   "scale": 1,
-  "name": "Mat (Dark)",
-  "cameraOffsets": [0, 0],
+  "name": "Mat (Playable) (Dark)",
+  "cameraOffsets": [-75, 0],
   "flipX": true,
   "singTime": 8.0,
   "startingAnimation": "idle",
@@ -30,39 +30,93 @@
     },
     {
       "flipY": false,
-      "offsets": [-125, 14],
+      "offsets": [55, 15],
       "frameRate": 24,
-      "prefix": "Left0",
+      "prefix": "Left",
       "flipX": false,
       "looped": false,
-      "name": "singRIGHT"
+      "name": "singLEFT"
     },
     {
       "flipY": false,
-      "offsets": [49, -130],
+      "offsets": [-9, -114],
       "frameRate": 24,
-      "prefix": "Down0",
+      "prefix": "Down",
       "flipX": false,
       "looped": false,
       "name": "singDOWN"
     },
     {
       "flipY": false,
-      "offsets": [-125, 73],
+      "offsets": [-5, 90],
       "frameRate": 24,
-      "prefix": "Up0",
+      "prefix": "Up",
       "flipX": false,
       "looped": false,
       "name": "singUP"
     },
     {
       "flipY": false,
-      "offsets": [94, -45],
+      "offsets": [-90, -42],
       "frameRate": 24,
-      "prefix": "Right0",
+      "prefix": "Right",
       "flipX": false,
       "looped": false,
-      "name": "singLEFT"
+      "name": "singRIGHT"
+    },
+    {
+      "flipY": false,
+      "offsets": [55, 15],
+      "frameRate": 24,
+      "prefix": "MissLeft",
+      "flipX": false,
+      "looped": false,
+      "name": "singLEFTmiss"
+    },
+    {
+      "flipY": false,
+      "offsets": [-9, -114],
+      "frameRate": 24,
+      "prefix": "MissDown",
+      "flipX": false,
+      "looped": false,
+      "name": "singDOWNmiss"
+    },
+    {
+      "flipY": false,
+      "offsets": [-5, 90],
+      "frameRate": 24,
+      "prefix": "MissUp",
+      "flipX": false,
+      "looped": false,
+      "name": "singUPmiss"
+    },
+    {
+      "flipY": false,
+      "offsets": [-90, -42],
+      "frameRate": 24,
+      "prefix": "MissRight",
+      "flipX": false,
+      "looped": false,
+      "name": "singRIGHTmiss"
+    },
+    {
+      "flipY": false,
+      "frameRate": 24,
+      "name": "hey",
+      "prefix": "Hey0",
+      "flipX": false,
+      "looped": false,
+      "offsets": [-7, 0]
+    },
+    {
+      "flipY": false,
+      "frameRate": 24,
+      "name": "cheer",
+      "prefix": "HeyAlt",
+      "flipX": false,
+      "looped": false,
+      "offsets": [-30, 0]
     }
   ]
 }
