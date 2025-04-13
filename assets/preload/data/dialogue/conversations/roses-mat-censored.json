@@ -33,7 +33,7 @@
       "box": "roses",
       "boxAnimation": "idle",
 
-      "text": ["What are talking about- I was just following your lead-"]
+      "text": ["What are talking about-", " I was just following your lead-"]
     },
     {
       "speaker": "senpai-angry",
