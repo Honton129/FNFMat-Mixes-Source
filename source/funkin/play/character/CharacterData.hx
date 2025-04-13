@@ -1,5 +1,6 @@
 package funkin.play.character;
 
+import flixel.graphics.frames.FlxFrame;
 import funkin.data.animation.AnimationData;
 import funkin.modding.events.ScriptEvent;
 import funkin.modding.events.ScriptEventDispatcher;
@@ -8,10 +9,9 @@ import funkin.play.character.ScriptedCharacter.ScriptedBaseCharacter;
 import funkin.play.character.ScriptedCharacter.ScriptedMultiSparrowCharacter;
 import funkin.play.character.ScriptedCharacter.ScriptedPackerCharacter;
 import funkin.play.character.ScriptedCharacter.ScriptedSparrowCharacter;
-import funkin.util.assets.DataAssets;
 import funkin.util.VersionUtil;
+import funkin.util.assets.DataAssets;
 import haxe.Json;
-import flixel.graphics.frames.FlxFrame;
 
 class CharacterDataParser
 {
@@ -290,7 +290,7 @@ class CharacterDataParser
     // FunkinCrew please dont skin me alive for copying pixelated icon and changing it a tiny bit
     switch (char)
     {
-      case "bf-christmas" | "bf-car" | "bf-pixel" | "bf-holding-gf" | "bf-dark":
+      case "bf-christmas" | "bf-car" | "bf-pixel" | "bf-holding-gf" | "bf-dark" | "bf" | "bf-opponent" | "bf-opponent-dark":
         charPath += "bfpixel";
       case "monster-christmas":
         charPath += "monsterpixel";
@@ -319,7 +319,7 @@ class CharacterDataParser
     if (!Assets.exists(Paths.image(charPath)))
     {
       trace('[WARN] Character ${char} has no freeplay icon.');
-      return null;
+      charPath = 'freeplay/icons/facepixel';
     }
 
     var isAnimated = Assets.exists(Paths.file('images/$charPath.xml'));

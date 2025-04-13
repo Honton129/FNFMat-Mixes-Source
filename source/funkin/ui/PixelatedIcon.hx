@@ -22,7 +22,7 @@ class PixelatedIcon extends FlxFilteredSprite
 
     switch (char)
     {
-      case "bf-christmas" | "bf-car" | "bf-pixel" | "bf-holding-gf":
+      case "bf-christmas" | "bf-car" | "bf-pixel" | "bf-holding-gf" | "bf-opponent" | "bf-opponent-dark":
         charPath += "bfpixel";
       case "monster-christmas":
         charPath += "monsterpixel";
@@ -49,8 +49,7 @@ class PixelatedIcon extends FlxFilteredSprite
     if (!openfl.utils.Assets.exists(Paths.image(charPath)))
     {
       trace('[WARN] Character ${char} has no freeplay icon.');
-      this.visible = false;
-      return;
+      charPath = 'freeplay/icons/facepixel';
     }
     else
     {

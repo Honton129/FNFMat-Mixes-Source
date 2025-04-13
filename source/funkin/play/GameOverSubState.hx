@@ -300,7 +300,7 @@ class GameOverSubState extends MusicBeatSubState
         }
 
         var playerCharacterId = PlayerRegistry.instance.getCharacterOwnerId(PlayState.instance.currentChart.characters.player);
-        var stickerSet = (playerCharacterId == "pico") ? "stickers-set-2" : "stickers-set-1";
+        var stickerSet = (playerCharacterId == "pico") ? "stickers-set-2" : (playerCharacterId == "mat") ? "mat-set-1" : "stickers-set-1";
         var stickerPack = switch (PlayState.instance.currentChart.song.id)
         {
           case "tutorial": "tutorial";

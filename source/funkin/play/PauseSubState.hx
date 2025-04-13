@@ -1,10 +1,8 @@
 package funkin.play;
 
-import flixel.FlxState;
-import funkin.ui.story.StoryMenuState;
-import funkin.data.freeplay.player.PlayerRegistry;
-import flixel.addons.transition.FlxTransitionableState;
 import flixel.FlxG;
+import flixel.FlxState;
+import flixel.addons.transition.FlxTransitionableState;
 import flixel.group.FlxSpriteGroup.FlxTypedSpriteGroup;
 import flixel.math.FlxMath;
 import flixel.text.FlxText;
@@ -12,12 +10,14 @@ import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
 import flixel.util.FlxColor;
 import funkin.audio.FunkinSound;
+import funkin.data.freeplay.player.PlayerRegistry;
 import funkin.data.song.SongRegistry;
-import funkin.ui.freeplay.FreeplayState;
 import funkin.graphics.FunkinSprite;
 import funkin.play.cutscene.VideoCutscene;
 import funkin.ui.AtlasText;
 import funkin.ui.MusicBeatSubState;
+import funkin.ui.freeplay.FreeplayState;
+import funkin.ui.story.StoryMenuState;
 
 /**
  * Parameters for initializing the PauseSubState.
@@ -747,7 +747,7 @@ class PauseSubState extends MusicBeatSubState
     }
 
     var playerCharacterId = PlayerRegistry.instance.getCharacterOwnerId(PlayState.instance.currentChart.characters.player);
-    var stickerSet = (playerCharacterId == "pico") ? "stickers-set-2" : "stickers-set-1";
+    var stickerSet = (playerCharacterId == "pico") ? "stickers-set-2" : (playerCharacterId == "mat") ? "mat-set-1" : "stickers-set-1";
     var stickerPack = switch (PlayState.instance.currentChart.song.id)
     {
       case "tutorial": "tutorial";

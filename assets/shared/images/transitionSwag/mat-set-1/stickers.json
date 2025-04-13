@@ -1,0 +1,11 @@
+{
+  "name": "mat-set-1",
+  "artist": "MAT_DoesStuff",
+  "stickers": {
+    "mat": ["matSticker1", "matSticker2", "matSticker3"]
+  },
+  "stickerPacks": {
+    "mat": ["mat"],
+    "all": ["mat"]
+  }
+}

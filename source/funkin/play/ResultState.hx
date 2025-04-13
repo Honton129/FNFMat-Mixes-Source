@@ -1,34 +1,34 @@
 package funkin.play;
 
-import funkin.ui.story.StoryMenuState;
-import funkin.graphics.adobeanimate.FlxAtlasSprite;
 import flixel.FlxSprite;
 import flixel.FlxSubState;
-import funkin.graphics.FunkinSprite;
+import flixel.addons.display.FlxBackdrop;
 import flixel.effects.FlxFlicker;
 import flixel.graphics.frames.FlxBitmapFont;
 import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.math.FlxPoint;
-import funkin.ui.MusicBeatSubState;
 import flixel.math.FlxRect;
 import flixel.text.FlxBitmapText;
-import funkin.data.freeplay.player.PlayerRegistry;
-import funkin.data.freeplay.player.PlayerData.PlayerResultsAnimationData;
-import funkin.ui.freeplay.charselect.PlayableCharacter;
-import flixel.util.FlxColor;
 import flixel.tweens.FlxEase;
-import funkin.graphics.FunkinCamera;
-import funkin.ui.freeplay.FreeplayState;
 import flixel.tweens.FlxTween;
-import flixel.addons.display.FlxBackdrop;
-import funkin.audio.FunkinSound;
+import flixel.util.FlxColor;
 import flixel.util.FlxGradient;
 import flixel.util.FlxTimer;
+import funkin.audio.FunkinSound;
+import funkin.data.freeplay.player.PlayerData.PlayerResultsAnimationData;
+import funkin.data.freeplay.player.PlayerRegistry;
+import funkin.graphics.FunkinCamera;
+import funkin.graphics.FunkinSprite;
+import funkin.graphics.adobeanimate.FlxAtlasSprite;
+import funkin.graphics.shaders.LeftMaskShader;
+import funkin.play.components.ClearPercentCounter;
+import funkin.play.components.TallyCounter;
 import funkin.play.scoring.Scoring;
 import funkin.save.Save.SaveScoreData;
-import funkin.graphics.shaders.LeftMaskShader;
-import funkin.play.components.TallyCounter;
-import funkin.play.components.ClearPercentCounter;
+import funkin.ui.MusicBeatSubState;
+import funkin.ui.freeplay.FreeplayState;
+import funkin.ui.freeplay.charselect.PlayableCharacter;
+import funkin.ui.story.StoryMenuState;
 
 /**
  * The state for the results screen after a song or week is finished.
@@ -784,7 +784,7 @@ class ResultState extends MusicBeatSubState
       var shouldTween = false;
       var shouldUseSubstate = false;
 
-      var stickerSet = (playerCharacterId == "pico") ? "stickers-set-2" : "stickers-set-1";
+      var stickerSet = (playerCharacterId == "pico") ? "stickers-set-2" : (playerCharacterId == "mat") ? "mat-set-1" : "stickers-set-1";
       var stickerPack = switch (PlayState.instance?.currentChart?.song?.id)
       {
         case "tutorial": "tutorial";
