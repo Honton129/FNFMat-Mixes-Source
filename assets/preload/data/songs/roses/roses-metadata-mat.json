@@ -12,7 +12,7 @@
       "instrumental": "mat",
       "altInstrumentals": []
     },
-    "stage": "schoolErect",
+    "stage": "schoolMat",
     "noteStyle": "pixel",
     "ratings": { "easy": 3, "normal": 4, "hard": 5 },
     "album": "matmixes1",
