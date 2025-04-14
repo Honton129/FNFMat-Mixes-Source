@@ -3,6 +3,7 @@ package funkin.ui.title;
 import flixel.FlxSprite;
 import flixel.group.FlxGroup;
 import flixel.input.gamepad.FlxGamepad;
+import flixel.math.FlxMath;
 import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
 import flixel.util.FlxColor;
@@ -10,27 +11,18 @@ import flixel.util.FlxDirectionFlags;
 import flixel.util.FlxTimer;
 import flixel.util.typeLimit.NextState;
 import funkin.audio.FunkinSound;
-import funkin.audio.visualize.SpectogramSprite;
 import funkin.graphics.FunkinSprite;
 import funkin.graphics.shaders.ColorSwap;
-import funkin.graphics.shaders.LeftMaskShader;
 import funkin.graphics.shaders.TitleOutline;
-import funkin.save.Save;
 import funkin.ui.AtlasText;
 import funkin.ui.MusicBeatState;
-import funkin.ui.freeplay.FreeplayState;
 import funkin.ui.mainmenu.MainMenuState;
 import openfl.Assets;
-import openfl.display.BlendMode;
-import openfl.display.Sprite;
-import openfl.events.AsyncErrorEvent;
-import openfl.events.MouseEvent;
-import openfl.events.NetStatusEvent;
-import openfl.media.Video;
-import openfl.net.NetStream;
 
-#if desktop
-#end
+/**
+ * The game's title screen.
+ * There's not much to add here.
+ */
 class TitleState extends MusicBeatState
 {
   /**
@@ -38,10 +30,19 @@ class TitleState extends MusicBeatState
    */
   public static var initialized:Bool = false;
 
+  /**
+   * Are the assets cleaned from the cache?
+   */
+  public static var cleanedCache:Bool = false;
+
   var blackScreen:FlxSprite;
   var credGroup:FlxGroup;
   var textGroup:FlxGroup;
   var ngSpr:FlxSprite;
+
+  // Title text configuration.
+  var titleTextColors:Array<FlxColor> = [0xFF33FFFF, 0xFF3333CC];
+  var titleTextAlphas:Array<Float> = [1, .64];
 
   var curWacky:Array<String> = [];
   var lastBeat:Int = 0;
@@ -52,17 +53,27 @@ class TitleState extends MusicBeatState
     super.create();
     swagShader = new ColorSwap();
 
+    if (cleanedCache)
+    {
+      Paths.image('gfDanceTitle');
+      Paths.image('logoBumpin');
+      Paths.image('titleEnter');
+    }
+
     curWacky = FlxG.random.getObject(getIntroTextShit());
     FlxG.sound.cache(Paths.music('freakyMenu/freakyMenu'));
     FlxG.sound.cache(Paths.music('girlfriendsRingtone/girlfriendsRingtone'));
 
-    // DEBUG BULLSHIT
-
-    if (!initialized) new FlxTimer().start(1, function(tmr:FlxTimer) {
-      startIntro();
-    });
+    if (!initialized)
+    {
+      new FlxTimer().start(1, function(tmr:FlxTimer) {
+        startIntro();
+      });
+    }
     else
+    {
       startIntro();
+    }
   }
 
   var logoBl:FlxSprite;
@@ -71,7 +82,6 @@ class TitleState extends MusicBeatState
   var gfDance:FlxSpriteOverlay;
   var danceLeft:Bool = false;
   var titleText:FlxSprite;
-  var maskShader = new LeftMaskShader();
 
   function startIntro():Void
   {
@@ -97,27 +107,18 @@ class TitleState extends MusicBeatState
     gfDance.animation.addByIndices('danceLeft', 'gfDance', [30, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14], "", 24, false);
     gfDance.animation.addByIndices('danceRight', 'gfDance', [15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29], "", 24, false);
 
-    // maskShader.swagSprX = gfDance.x;
-    // maskShader.swagMaskX = gfDance.x + 200;
-    // maskShader.frameUV = gfDance.frame.uv;
-    // gfDance.shader = maskShader;
-
     gfDance.shader = swagShader.shader;
 
-    // gfDance.shader = new TitleOutline();
-
     add(logoBl);
-
     add(gfDance);
 
     titleText = new FlxSprite(100, FlxG.height * 0.8);
     titleText.frames = Paths.getSparrowAtlas('titleEnter');
-    titleText.animation.addByPrefix('idle', "Press Enter to Begin", 24);
+    titleText.animation.addByPrefix('idle', "ENTER IDLE", 24);
     titleText.animation.addByPrefix('press', "ENTER PRESSED", 24);
     titleText.animation.play('idle');
     titleText.updateHitbox();
     titleText.shader = swagShader.shader;
-    // titleText.screenCenter(X);
     add(titleText);
 
     if (!initialized) // Fix an issue where returning to the credits would play a black screen.
@@ -165,7 +166,9 @@ class TitleState extends MusicBeatState
 
     if (initialized) skipIntro();
     else
+    {
       initialized = true;
+    }
 
     if (FlxG.sound.music != null) FlxG.sound.music.onComplete = moveToAttract;
   }
@@ -211,6 +214,7 @@ class TitleState extends MusicBeatState
   }
 
   var transitioning:Bool = false;
+  var titleTimer:Float = 0;
 
   override function update(elapsed:Float):Void
   {
@@ -228,22 +232,12 @@ class TitleState extends MusicBeatState
 
     Conductor.instance.update();
 
-    /* if (FlxG.onMobile)
-          {
-      if (gfDance != null)
-      {
-        gfDance.x = (FlxG.width / 2) + (FlxG.accelerometer.x * (FlxG.width / 2));
-        // gfDance.y = (FlxG.height / 2) + (FlxG.accelerometer.y * (FlxG.height / 2));
-      }
-          }
-     */
     if (FlxG.keys.justPressed.I)
     {
       FlxTween.tween(outlineShaderShit, {funnyX: 50, funnyY: 50}, 0.6, {ease: FlxEase.quartOut});
     }
-    if (FlxG.keys.pressed.D) outlineShaderShit.funnyX += 1;
-    // outlineShaderShit.xPos.value[0] += 1;
 
+    if (FlxG.keys.pressed.D) outlineShaderShit.funnyX += 1;
     if (FlxG.keys.justPressed.Y)
     {
       FlxTween.cancelTweensOf(FlxG.stage.window, ['x', 'y']);
@@ -266,6 +260,22 @@ class TitleState extends MusicBeatState
       #end
     }
 
+    titleTimer += FlxMath.bound(elapsed, 0, 1);
+    if (titleTimer > 2) titleTimer -= 2;
+    if (initialized && !transitioning && skippedIntro)
+    {
+      if (!pressedEnter)
+      {
+        var timer:Float = titleTimer;
+        if (timer >= 1) timer = (-timer) + 2;
+
+        timer = FlxEase.quadInOut(timer);
+
+        titleText.color = FlxColor.interpolate(titleTextColors[0], titleTextColors[1], timer);
+        titleText.alpha = FlxMath.lerp(titleTextAlphas[0], titleTextAlphas[1], timer);
+      }
+    }
+
     // If you spam Enter, we should skip the transition.
     if (pressedEnter && transitioning && skippedIntro)
     {
@@ -275,7 +285,9 @@ class TitleState extends MusicBeatState
     if (pressedEnter && !transitioning && skippedIntro)
     {
       if (FlxG.sound.music != null) FlxG.sound.music.onComplete = null;
-      // netStream.play(Paths.file('music/kickstarterTrailer.mp4'));
+      titleText.color = FlxColor.WHITE;
+      titleText.alpha = 1;
+
       titleText.animation.play('press');
       FlxG.camera.flash(FlxColor.WHITE, 1);
       FunkinSound.playOnce(Paths.sound('confirmMenu'), 0.7);
@@ -284,16 +296,9 @@ class TitleState extends MusicBeatState
       var targetState:NextState = () -> new MainMenuState();
 
       new FlxTimer().start(2, function(tmr:FlxTimer) {
-        // These assets are very unlikely to be used for the rest of gameplay, so it unloads them from cache/memory
-        // Saves about 50mb of RAM or so???
-        // TODO: This BREAKS the title screen if you return back to it! Figure out how to fix that.
-        // Assets.cache.clear(Paths.image('gfDanceTitle'));
-        // Assets.cache.clear(Paths.image('logoBumpin'));
-        // Assets.cache.clear(Paths.image('titleEnter'));
-        // ngSpr??
+        clearAssets();
         FlxG.switchState(targetState);
       });
-      // FunkinSound.playOnce(Paths.music('titleShoot'), 0.7);
     }
     if (pressedEnter && !skippedIntro && initialized) skipIntro();
 
@@ -303,9 +308,14 @@ class TitleState extends MusicBeatState
     super.update(elapsed);
   }
 
-  override function draw()
+  // These assets are very unlikely to be used for the rest of gameplay, so it unloads them from cache/memory
+  // Saves about 50mb of RAM or so???
+  function clearAssets():Void
   {
-    super.draw();
+    Assets.cache.clear(Paths.image('gfDanceTitle'));
+    Assets.cache.clear(Paths.image('logoBumpin'));
+    Assets.cache.clear(Paths.image('titleEnter'));
+    cleanedCache = true;
   }
 
   var cheatArray:Array<Int> = [0x0001, 0x0010, 0x0001, 0x0010, 0x0100, 0x1000, 0x0100, 0x1000];
@@ -323,7 +333,7 @@ class TitleState extends MusicBeatState
     }
   }
 
-  function codePress(input:Int)
+  function codePress(input:Int):Void
   {
     if (input == cheatArray[curCheatPos])
     {
@@ -331,7 +341,9 @@ class TitleState extends MusicBeatState
       if (curCheatPos >= cheatArray.length) startCheat();
     }
     else
+    {
       curCheatPos = 0;
+    }
 
     trace(input);
   }
@@ -339,8 +351,6 @@ class TitleState extends MusicBeatState
   function startCheat():Void
   {
     cheatActive = true;
-
-    var spec:SpectogramSprite = new SpectogramSprite(FlxG.sound.music);
 
     FunkinSound.playMusic('girlfriendsRingtone',
       {
@@ -355,7 +365,7 @@ class TitleState extends MusicBeatState
     FunkinSound.playOnce(Paths.sound('confirmMenu'), 0.7);
   }
 
-  function createCoolText(textArray:Array<String>)
+  function createCoolText(textArray:Array<String>):Void
   {
     if (credGroup == null || textGroup == null) return;
 
@@ -364,12 +374,11 @@ class TitleState extends MusicBeatState
       var money:AtlasText = new AtlasText(0, 0, textArray[i], AtlasFont.BOLD);
       money.screenCenter(X);
       money.y += (i * 60) + 200;
-      // credGroup.add(money);
       textGroup.add(money);
     }
   }
 
-  function addMoreText(text:String)
+  function addMoreText(text:String):Void
   {
     if (credGroup == null || textGroup == null) return;
 
@@ -381,13 +390,12 @@ class TitleState extends MusicBeatState
     textGroup.add(coolText);
   }
 
-  function deleteCoolText()
+  function deleteCoolText():Void
   {
     if (credGroup == null || textGroup == null) return;
 
     while (textGroup.members.length > 0)
     {
-      // credGroup.remove(textGroup.members[0], true);
       textGroup.remove(textGroup.members[0], true);
     }
   }
@@ -402,7 +410,6 @@ class TitleState extends MusicBeatState
 
     if (!skippedIntro)
     {
-      // FlxG.log.add(Conductor.instance.currentBeat);
       // if the user is draggin the window some beats will
       // be missed so this is just to compensate
       if (Conductor.instance.currentBeat > lastBeat)
@@ -435,10 +442,12 @@ class TitleState extends MusicBeatState
             case 13:
               addMoreText('FNF');
             case 14:
-              // MAT-ING TIME GUYS!
+              // We make a little easter egg with the Mat-ing time joke :)
               if (curWacky[0] == "mat-ing") addMoreText('Mat-ing');
               else
+              {
                 addMoreText('Mat');
+              }
             case 15:
               addMoreText('Mixes');
             case 16:
@@ -460,7 +469,9 @@ class TitleState extends MusicBeatState
       {
         if (danceLeft) gfDance.animation.play('danceRight');
         else
+        {
           gfDance.animation.play('danceLeft');
+        }
       }
     }
 
